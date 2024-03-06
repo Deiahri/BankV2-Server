@@ -8,7 +8,7 @@ const inspectionDelay = 1000*60*60*24;
 // const inspectionDelay = 1000*10;
 
 const expressApp = express();
-const PORT = 8085;
+const PORT = 3000;
 expressApp.set('view engine', 'ejs');
 expressApp.use(important.cors(important.corsOptions));
 expressApp.use(express.json());
