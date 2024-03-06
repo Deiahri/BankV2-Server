@@ -5,10 +5,11 @@ const tools = require('./tools');
 const yearlyInterestPercent = 6;
 const savingsInterestRate = 0.49;
 
+const pSQLUsername = 'bankapp';
 // specify connection stuff.
 const connectionParameters = {
     host: 'localHost',
-    user: 'postgres',
+    user: pSQLUsername,
     port: 5432,
     password: 'root21!',
     database: 'banktest'

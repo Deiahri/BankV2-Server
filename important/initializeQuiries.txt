@@ -1,0 +1,271 @@
+-- Clear all data
+DROP SCHEMA Public CASCADE;
+CREATE SCHEMA Public;
+--CITEXT EXTENSION
+CREATE EXTENSION CITEXT;
+-- Sex
+CREATE DOMAIN sex AS VARCHAR(5)
+CHECK(
+    VALUE IN ('M', 'F', 'OTHER')
+);
+-- PersonID
+CREATE DOMAIN person_id AS VARCHAR(9)
+CHECK(
+    VALUE ~ '^\d{9}$'
+);
+-- PositiveInt
+CREATE DOMAIN positive_int AS INT
+CHECK(
+    VALUE > -1
+);
+-- PositiveNumber
+CREATE DOMAIN positive_number AS DECIMAL(14,2)
+CHECK(
+    VALUE >= 0
+);
+-- LoanAmount
+CREATE DOMAIN loan_amount AS INT
+CHECK(
+    VALUE > 99
+);
+-- InterestRate
+CREATE DOMAIN interest_rate AS DECIMAL(5, 2)
+CHECK(
+    VALUE >= 0
+    AND VALUE < 1000
+);
+-- Interest Period
+CREATE DOMAIN interest_period AS VARCHAR(5)
+CHECK(
+    VALUE IN ('DAY', 'WEEK', 'MONTH', 'YEAR')
+);
+
+-- Card Security Number
+CREATE DOMAIN card_security_number AS VARCHAR(5)
+CHECK(
+    VALUE ~ '^\d{3}$'
+);
+-- First Name
+CREATE DOMAIN f_name AS VARCHAR(32)
+CHECK(
+   LENGTH(VALUE) > 0
+);
+--Middle Name
+CREATE DOMAIN m_name AS VARCHAR(64);
+--Last Name
+CREATE DOMAIN l_name AS VARCHAR(64)
+CHECK(
+   LENGTH(VALUE) > 0
+);
+--Address
+CREATE DOMAIN address AS VARCHAR(128)
+CHECK(
+   LENGTH(VALUE) > 0
+);
+--City
+CREATE DOMAIN city AS VARCHAR(128);
+--State
+CREATE DOMAIN state AS VARCHAR(64);
+-- US Postal Code
+CREATE DOMAIN us_postal_code AS VARCHAR(10)
+CHECK(
+   VALUE ~ '^\d{5}$'
+   OR VALUE ~ '^\d{5}-\d{4}$'
+);
+--Account Type
+CREATE DOMAIN account_type AS VARCHAR(8)
+CHECK(
+  VALUE IN ('CHECKING', 'SAVING')
+);
+--Transaction Amount
+CREATE DOMAIN transaction_amount AS DECIMAL(14, 2);
+-- CreditLimit
+CREATE DOMAIN credit_limit AS INT
+CHECK(
+    VALUE > 200
+);
+--Username
+CREATE DOMAIN username AS CITEXT
+CHECK(
+    LENGTH(VALUE) > 3 AND LENGTH(VALUE) < 33
+);
+
+--Password
+CREATE DOMAIN password AS CITEXT
+CHECK(
+    LENGTH(VALUE) > 7 AND LENGTH(VALUE) < 65
+);
+--Email
+CREATE DOMAIN email AS CITEXT
+CHECK(
+    value ~ '^[a-zA-Z0-9.!#$%&''*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
+);
+
+
+-- Relations
+-- Customer
+CREATE TABLE Customer (
+    CustomerID SERIAL NOT NULL,
+    FName VARCHAR(32) NOT NULL,
+    MName VARCHAR(32) DEFAULT NULL,
+    LName VARCHAR(64) NOT NULL,
+    Username username NOT NULL UNIQUE,
+    Password password NOT NULL,
+    Email email DEFAULT NULL UNIQUE,
+    PersonID NUMERIC(9) NOT NULL UNIQUE,
+    Address address NOT NULL,
+    City city NOT NULL,
+    State state NOT NULL,
+    ZipCode us_postal_code NOT NULL,
+    Sex sex NOT NULL,
+    JoinDate DATE NOT NULL DEFAULT CURRENT_DATE,
+    Terminated BOOLEAN DEFAULT FALSE,
+    TerminationDate DATE DEFAULT NULL,
+    TerminationReason TEXT DEFAULT NULL,
+	CONSTRAINT Max_Customer_ID CHECK(CustomerID BETWEEN 0 AND 999999999),
+	PRIMARY KEY (CustomerID)
+);
+
+--Loan
+CREATE TABLE Loan(
+    LoanID SERIAL NOT NULL,
+    CustomerID INT NOT NULL,
+    Amount loan_amount NOT NULL,
+    AmountLeft positive_number NOT NULL DEFAULT 0,
+    AmountDue positive_number NOT NULL DEFAULT 0.00,
+    DueDate DATE DEFAULT NULL,
+    OpenDate DATE NOT NULL DEFAULT CURRENT_DATE,
+    LastInterestDate DATE NOT NULL DEFAULT CURRENT_DATE,
+    InterestPercent interest_rate NOT NULL DEFAULT 0.0,
+    InterestPeriod interest_period NOT NULL DEFAULT 'MONTH',
+    InterestPeriodQuantity INT NOT NULL DEFAULT 1,
+    Defaulted Boolean NOT NULL DEFAULT FALSE,
+    DefaultedDate DATE DEFAULT NULL,
+    Active Boolean NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (LoanID),
+    FOREIGN KEY (CustomerID) REFERENCES Customer (CustomerID) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
+--Account
+CREATE TABLE Account (
+    AccountNumber SERIAL NOT NULL,
+    CustomerID INT NOT NULL,
+    AccountType account_type NOT NULL DEFAULT 'CHECKING',
+    AccountName VARCHAR(32) NOT NULL,
+    interestRate interest_rate NOT NULL DEFAULT 0.00,
+    Balance DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+    OpenDate DATE NOT NULL DEFAULT CURRENT_DATE,
+    LastInterestDate DATE NOT NULL DEFAULT CURRENT_DATE,
+    AllowOverdraw Boolean NOT NULL DEFAULT FALSE,
+    Closed Boolean NOT NULL DEFAULT FALSE,
+    ClosedDate DATE DEFAULT NULL,
+    RedirectAccount INT DEFAULT NULL,
+    PRIMARY KEY (AccountNumber),
+    FOREIGN KEY (CustomerID) REFERENCES Customer (CustomerID) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (RedirectAccount) REFERENCES Account (AccountNumber)
+);
+
+--Card Design
+CREATE TABLE CardDesign(
+    DesignID SERIAL NOT NULL,
+    DesignName Varchar(32) NOT NULL,
+    ImageName Varchar(32) NOT NULL,
+    Description TEXT DEFAULT NULL,
+    PRIMARY KEY(DesignID)
+);
+
+--Credit Card Design
+CREATE TABLE CreditCardDesign (
+    BaseLimit credit_limit NOT NULL,
+    BaseInterestRate interest_rate NOT NULL,
+    PRIMARY KEY(BaseLimit),
+    UNIQUE (DesignID)
+) INHERITS (CardDesign);
+
+--Debit Card Design
+CREATE TABLE DebitCardDesign (
+    UNIQUE(DesignID)
+) INHERITS (CardDesign);
+
+
+--Card
+CREATE TABLE Card (
+    CardNumber SERIAL NOT NULL,
+    SecurityCode card_security_number NOT NULL,
+    CardName f_name DEFAULT NULL,
+    FName f_name NOT NULL,
+    MName m_name DEFAULT '',
+    LName l_name NOT NULL,
+    Address address NOT NULL,
+    City city NOT NULL,
+    State state NOT NULL,
+    ZipCode us_postal_code NOT NULL,
+    DateOfCard DATE NOT NULL DEFAULT CURRENT_DATE,
+    ExpirationDate DATE DEFAULT NULL,
+    Paused Boolean NOT NULL DEFAULT FALSE,
+    Canceled Boolean NOT NULL DEFAULT FALSE,
+    DesignID INT NOT NULL,
+    Type Varchar(8) NOT NULL,
+    PRIMARY KEY (CardNumber),
+    FOREIGN KEY (DesignID) REFERENCES CardDesign (DesignID)
+);
+
+
+
+--Debit Card
+CREATE TABLE DebitCard (
+    AccountNumber INT NOT NULL,
+    DesignID INT NOT NULL,
+    Type Varchar(8) NOT NULL DEFAULT 'debit',
+    FOREIGN KEY (AccountNumber) REFERENCES Account (AccountNumber) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE(CardNumber),
+    FOREIGN KEY (DesignID) REFERENCES DebitCardDesign (DesignID) ON DELETE SET NULL ON UPDATE CASCADE
+) INHERITS (Card);
+
+--Credit Card
+CREATE TABLE CreditCard (
+    CustomerID INT NOT NULL,
+    CreditLimit credit_limit NOT NULL DEFAULT 200.00,
+    CreditUsed positive_number NOT NULL DEFAULT 0.00,
+    InterestPercent interest_rate NOT NULL DEFAULT 0.00,
+    MinimumPayment positive_number NOT NULL DEFAULT 0.00,
+    DueDate DATE DEFAULT CURRENT_DATE + INTERVAL '1 month',
+    LastInterestDate DATE NOT NULL DEFAULT CURRENT_DATE,
+    DesignID INT NOT NULL,
+    Type Varchar(8) NOT NULL DEFAULT 'credit',
+    FOREIGN KEY (CustomerID) REFERENCES Customer (CustomerID) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (DesignID) REFERENCES CreditCardDesign (DesignID) ON DELETE SET NULL ON UPDATE CASCADE,
+    UNIQUE(CardNumber)
+) INHERITS (Card);
+
+
+
+
+
+
+
+
+--Transaction
+CREATE TABLE Transaction(
+    Source TEXT NOT NULL,
+    Date TIMESTAMP NOT NULL DEFAULT NOW(),
+    Amount transaction_amount NOT NULL
+);
+--Loan Transaction
+CREATE TABLE LoanTransaction(
+    LoanID INT NOT NULL,
+    FOREIGN KEY (LoanID) REFERENCES Loan (LoanID) ON DELETE CASCADE ON UPDATE CASCADE
+) INHERITS (Transaction);
+--Account Transaction
+CREATE TABLE AccountTransaction(
+    AccountNumber INT NOT NULL,
+    CardNumber INT DEFAULT NULL,
+    FOREIGN KEY (AccountNumber) REFERENCES Account (AccountNumber) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (CardNumber) REFERENCES DebitCard (CardNumber) ON DELETE SET NULL ON UPDATE CASCADE
+) INHERITS (Transaction);
+--Credit Card Transaction
+CREATE TABLE CreditCardTransaction(
+    CardNumber INT NOT NULL,
+    FOREIGN KEY (CardNumber) REFERENCES CreditCard (CardNumber) ON DELETE CASCADE ON UPDATE CASCADE
+) INHERITS (Transaction);
