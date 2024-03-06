@@ -24,15 +24,19 @@ PGPool.connect();
 if(doInitialize) {
     let res = null;
     fs.readFile('./important/initializeQuiries.txt', 'utf8', async (err, data) => {
-        for(let command of data.split(';')) {
-            if(command.trim() !== '') {
-                res = await Query(command+";");
-                if(res.message) {
-                    console.log(command, res);
-                    break;
+        if (err) {
+            console.log(err);
+        } else {
+            for(let command of data.split(';')) {
+                if(command.trim() !== '') {
+                    res = await Query(command+";");
+                    if(res.message) {
+                        console.log(command, res);
+                        break;
+                    }
                 }
             }
-        } 
+        }
     });
 }
 
