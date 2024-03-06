@@ -5,18 +5,21 @@ const tools = require('./tools');
 const yearlyInterestPercent = 6;
 const savingsInterestRate = 0.49;
 
-const pSQLUsername = 'bankapp';
+const pSQLUsername = 'postgres';
 // specify connection stuff.
 const connectionParameters = {
-    host: 'localHost',
-    user: pSQLUsername,
+    host: 'localhost',
+    user: pSQLUsername, 
     port: 5432,
     password: 'root21!',
-    database: 'banktest'
+    database: 'tester'
 };
+const connectionString = `postgres://${pSQLUsername}:root21!@localhost:5432/banktest`;
 
 // create client object and pass connection information
+// const PGPool = new Pool(connectionParameters);
 const PGPool = new Pool(connectionParameters);
+
 // connect to the database
 
 PGPool.connect();
