@@ -6,7 +6,7 @@ const yearlyInterestPercent = 6;
 const savingsInterestRate = 0.49;
 
 const doInitialize = true;
-const pSQLUsername = 'postgres';
+const pSQLUsername = 'bankApp';
 // specify connection stuff.
 const connectionParameters = {
     host: 'localHost',
