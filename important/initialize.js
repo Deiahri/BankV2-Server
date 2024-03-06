@@ -10,7 +10,7 @@ const pSQLUsername = 'bankApp';
 // specify connection stuff.
 const connectionParameters = {
     host: 'localHost',
-    user: pSQLUsername,
+    user: pSQLUsername, 
     port: 5432,
     password: 'root21!',
     database: 'tester'
