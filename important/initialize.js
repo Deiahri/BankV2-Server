@@ -3,7 +3,7 @@ const { Pool } = require('pg'); // see 'practice/3 - importing.js' for more info
 const fs = require('node:fs');
 
 const doInitialize = true;
-const pSQLUsername = 'bankApp';
+const pSQLUsername = 'bankapp';
 // specify connection stuff.
 const connectionParameters = {
     host: 'localhost',
