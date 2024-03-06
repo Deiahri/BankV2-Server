@@ -15,6 +15,12 @@ expressApp.use(express.json());
 expressApp.use(prepareCookies);
 expressApp.use(middleWareModule.validateUser);
 
+
+expressApp.get('/online-status', (req, res) => {
+    res.send({
+        'status': true
+    });
+})
 // expressApp.use(inspect);
 
 // function inspect(req, res, next) {
