@@ -24,7 +24,7 @@ Router.post('/login', (requestObj, responseObj) => {
                 else if(passResponse.password === password) {
                     const token = tools.sign({ userID: passResponse.customerid }, { expiresIn: '1hr'});
                     responseObj.send({
-                        'redirect': 'pages/accounts.html',
+                        'redirect': 'Pages/accounts.html',
                         'cookie': {
                             'userToken': tools.createCookie(token, '1hr')
                         }
