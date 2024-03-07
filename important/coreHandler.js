@@ -5,7 +5,7 @@ const bankRoutingNumber = '051000024';
 const bankBIN = '493955';
 
 const corsOptions = {
-    "origin": 'http://127.0.0.1:5502',
+    "origin": ['https://deiahri.github.io', 'http://127.0.0.1:5502'],
     credentials: true,
     'Access-Control-Allow-Credentials': true,
     'Access-Control-Allow-Origin': true,

@@ -32,7 +32,8 @@ if(doInitialize) {
                     res = await Query(command+";");
                     if(res.message) {
                         console.log(command, res);
-                        break;
+                    } else {
+                        console.log('good');
                     }
                 }
             }

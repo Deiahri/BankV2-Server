@@ -7,8 +7,19 @@ const inspect = require('./inspection/inspect');
 const inspectionDelay = 1000*60*60*24;
 // const inspectionDelay = 1000*10;
 
+
+
+
 const expressApp = express();
 const PORT = 8080;
+
+// function intermidiate(req, res, next) {
+//     console.log('incoming request');
+//     next();
+// }
+// expressApp.use(intermidiate);
+
+
 expressApp.set('view engine', 'ejs');
 expressApp.use(important.cors(important.corsOptions));
 expressApp.use(express.json());
