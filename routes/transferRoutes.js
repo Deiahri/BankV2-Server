@@ -5,8 +5,6 @@ const tools = require('../tools');
 const Router = express.Router();
 const middleWareModule = require('../middleware');
 
-Router.use(middleWareModule.requireUser);
-
 Router.post('/submit', async (req, res) => {
     let transactionObject = {};
     let paymentType = req.body.paymentType;
@@ -491,5 +489,7 @@ Router.post('/submit', async (req, res) => {
     });
     return;
 })
+
+Router.use(middleWareModule.requireUser);
 
 module.exports = Router;
